@@ -139,7 +139,7 @@ import { useState, useEffect } from 'react';
 import { ethers } from 'ethers';
 
 const VAULT_ABI = [
-  "function unicornballStats() view returns (uint256,uint256,uint256,uint256,uint256,bool,uint256,uint256)",
+  "function uniballStats() view returns (uint256,uint256,uint256,uint256,uint256,bool,uint256,uint256)",
   "function TOKEN() view returns (address)",
 ];
 
@@ -161,7 +161,7 @@ export function Unicorn BallWidget() {
     const load = async () => {
       const provider = new ethers.JsonRpcProvider('https://eth.drpc.org');
       const vault = new ethers.Contract(UNICORNBALL_VAULT, VAULT_ABI, provider);
-      const s = await vault.unicornballStats();
+      const s = await vault.uniballStats();
 
       setStats({
         ethIn:      parseFloat(ethers.formatEther(s[0])).toFixed(4),
@@ -179,7 +179,7 @@ export function Unicorn BallWidget() {
     return () => clearInterval(interval);
   }, []);
 
-  if (!stats) return <div style={styles.container}>Loading unicornball...</div>;
+  if (!stats) return <div style={styles.container}>Loading uniball...</div>;
 
   return (
     <div style={{...styles.container, border: fireball ? '1px solid #ff6b35' : '1px solid #2a2a2a'}}>

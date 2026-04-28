@@ -22,9 +22,9 @@ pragma solidity ^0.8.24;
  * creator's fee recipient address.
  *
  * Fee flow:
- *   Livo bonding curve  ──ETH──►  UnicornBall
- *   Uniswap V4 LP fees  ──ETH──►  UnicornBall  (claim manually)
- *   Uniswap V4 sell-tax ──WETH──► UnicornBall  (auto-unwrapped)
+ *   Livo bonding curve  ──ETH──►  UniBall
+ *   Uniswap V4 LP fees  ──ETH──►  UniBall  (claim manually)
+ *   Uniswap V4 sell-tax ──WETH──► UniBall  (auto-unwrapped)
  *                              │
  *                              ▼
  *                    buyback() → Uniswap V2 router
@@ -75,7 +75,7 @@ interface IWETH {
 }
 
 // ─── Main contract ─────────────────────────────────────────────────────────────
-contract UnicornBall is ReentrancyGuard, Ownable {
+contract UniBall is ReentrancyGuard, Ownable {
     using SafeERC20 for IERC20;
 
     // ── Constants ──────────────────────────────────────────────────────────────
@@ -369,7 +369,7 @@ contract UnicornBall is ReentrancyGuard, Ownable {
      * @notice Returns the full unicorn ball stats in one call.
      *         Great for displaying on the livo.trade token page.
      */
-    function unicornballStats() external view returns (
+    function uniballStats() external view returns (
         uint256 ethReceived,
         uint256 tokensBoughtBack,
         uint256 tokensBurned,
