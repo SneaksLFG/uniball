@@ -22,9 +22,9 @@ pragma solidity ^0.8.24;
  * creator's fee recipient address.
  *
  * Fee flow:
- *   Livo bonding curve  ──ETH──►  UnicornBallVault
- *   Uniswap V4 LP fees  ──ETH──►  UnicornBallVault  (claim manually)
- *   Uniswap V4 sell-tax ──WETH──► UnicornBallVault  (auto-unwrapped)
+ *   Livo bonding curve  ──ETH──►  UnicornBall
+ *   Uniswap V4 LP fees  ──ETH──►  UnicornBall  (claim manually)
+ *   Uniswap V4 sell-tax ──WETH──► UnicornBall  (auto-unwrapped)
  *                              │
  *                              ▼
  *                    buyback() → Uniswap V2 router
@@ -75,7 +75,7 @@ interface IWETH {
 }
 
 // ─── Main contract ─────────────────────────────────────────────────────────────
-contract UnicornBallVault is ReentrancyGuard, Ownable {
+contract UnicornBall is ReentrancyGuard, Ownable {
     using SafeERC20 for IERC20;
 
     // ── Constants ──────────────────────────────────────────────────────────────
