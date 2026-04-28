@@ -22,9 +22,9 @@ pragma solidity ^0.8.24;
  * creator's fee recipient address.
  *
  * Fee flow:
- *   Livo bonding curve  ──ETH──►  UniBall
- *   Uniswap V4 LP fees  ──ETH──►  UniBall  (claim manually)
- *   Uniswap V4 sell-tax ──WETH──► UniBall  (auto-unwrapped)
+ *   Livo bonding curve  ──ETH──►  UnicornBall
+ *   Uniswap V4 LP fees  ──ETH──►  UnicornBall  (claim manually)
+ *   Uniswap V4 sell-tax ──WETH──► UnicornBall  (auto-unwrapped)
  *                              │
  *                              ▼
  *                    buyback() → Uniswap V2 router
@@ -72,6 +72,12 @@ interface IUniswapV2Router02 {
 interface IWETH {
     function withdraw(uint256 wad) external;
     function balanceOf(address) external view returns (uint256);
+}
+
+// ─── Livo feeHandler interface ────────────────────────────────────────────────
+interface IFeeHandler {
+    function claim(address[] calldata tokens) external;
+    function getClaimable(address[] calldata tokens, address receiver) external view returns (uint256);
 }
 
 // ─── Main contract ─────────────────────────────────────────────────────────────
@@ -369,7 +375,7 @@ contract UniBall is ReentrancyGuard, Ownable {
      * @notice Returns the full unicorn ball stats in one call.
      *         Great for displaying on the livo.trade token page.
      */
-    function uniballStats() external view returns (
+    function uniBallStats() external view returns (
         uint256 ethReceived,
         uint256 tokensBoughtBack,
         uint256 tokensBurned,
@@ -395,5 +401,33 @@ contract UniBall is ReentrancyGuard, Ownable {
     function buybackPercent(uint256 totalSupply) external view returns (uint256 bps) {
         if (totalSupply == 0) return 0;
         return (totalTokensBoughtBack * 10000) / totalSupply;
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    //  LIVO FEEHANDLER INTEGRATION
+    // ─────────────────────────────────────────────────────────────────────────
+
+    /**
+     * @notice Claim pending fees from Livo feeHandler, then auto-buyback.
+     *         MUST be called before setFeeReceiver on the token.
+     *         feeHandler for UniBall: 0xc18030d76573784fff4E6365309E1acD967506ff
+     */
+    function claimAndBuyback(address feeHandler) external onlyOwner nonReentrant {
+        address[] memory tokens = new address[](1);
+        tokens[0] = TOKEN;
+        uint256 balBefore = address(this).balance;
+        IFeeHandler(feeHandler).claim(tokens);
+        uint256 claimed = address(this).balance - balBefore;
+        totalETHReceived += claimed;
+        _maybeExecuteBuyback(0);
+    }
+
+    /**
+     * @notice Check pending claimable fees from feeHandler.
+     */
+    function pendingFees(address feeHandler) external view returns (uint256) {
+        address[] memory tokens = new address[](1);
+        tokens[0] = TOKEN;
+        return IFeeHandler(feeHandler).getClaimable(tokens, address(this));
     }
 }
