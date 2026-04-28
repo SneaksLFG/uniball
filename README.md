@@ -1,4 +1,4 @@
-# ❄️ Unicorn Ball Vault — Complete Build Guide for livo.trade
+# ❄️ UniBall — Complete Build Guide for livo.trade
 
 ---
 
@@ -7,14 +7,14 @@
 The prompt you were given assumes you can deploy a custom ERC-20 with embedded tax on livo.trade.  
 **You cannot.** Livo uses a minimal-proxy factory — all tokens are immutable clones.
 
-The correct approach (and arguably more elegant): deploy a **Unicorn BallVault.sol** contract that acts as your creator address. When Livo pays ETH fees to "the creator", they go to this contract, which auto-buybacks your token via Uniswap.
+The correct approach (and arguably more elegant): deploy a **UniBallVault.sol** contract that acts as your creator address. When Livo pays ETH fees to "the creator", they go to this contract, which auto-buybacks your token via Uniswap.
 
 ```
 Livo bonding-curve fees (1% ETH split 50/50)
            │
            ▼ your 50% in ETH
   ┌──────────────────┐
-  │  Unicorn BallVault   │  ←── also receives Uniswap V4 LP fees + sell-tax WETH
+  │  UniBallVault   │  ←── also receives Uniswap V4 LP fees + sell-tax WETH
   └──────────────────┘
            │
            ▼  auto-trigger when balance ≥ 0.01 ETH
@@ -28,14 +28,14 @@ Livo bonding-curve fees (1% ETH split 50/50)
 
 ---
 
-## Step 1 — Deploy Unicorn BallVault FIRST
+## Step 1 — Deploy UniBallVault FIRST
 
 You must deploy the vault **before** creating the token on livo.trade, because you need to use the vault address as your creator wallet.
 
 ### Option A: Remix (easiest)
 
 1. Open **remix.ethereum.org**
-2. Create new file → paste `Unicorn BallVault.sol`
+2. Create new file → paste `UniBallVault.sol`
 3. Install OpenZeppelin (Remix will auto-fetch via `@openzeppelin/...` imports)
 4. Compiler: `0.8.24`, optimization: `200` runs
 5. Deploy with:
@@ -49,7 +49,7 @@ You must deploy the vault **before** creating the token on livo.trade, because y
 ```bash
 forge install OpenZeppelin/openzeppelin-contracts
 
-forge create src/Unicorn BallVault.sol:Unicorn BallVault \
+forge create src/UniBallVault.sol:UniBallVault \
   --rpc-url $ETH_RPC \
   --private-key $PK \
   --constructor-args \
@@ -70,7 +70,7 @@ forge create src/Unicorn BallVault.sol:Unicorn BallVault \
    - **"Creator LP fees"** → graduates to Uniswap V4, 1% fee, 50/50 ETH to you/treasury. Fees collected as ETH on buys, token fees burned.
    - **"Creator LP fees + Tax Collection Period"** → additionally, 14-day sell-tax up to 5% goes to creator in WETH.
 
-   **For Unicorn Ball: choose "Creator LP fees + Tax Collection Period"** — this maximizes ETH flowing into the vault (buy LP fees + sell taxes).
+   **For UniBall: choose "Creator LP fees + Tax Collection Period"** — this maximizes ETH flowing into the vault (buy LP fees + sell taxes).
 
 5. **But**: the creator address is your **connected wallet**, not the vault. So after deployment, you need to redirect fee claims:
    - Livo lets you **claim LP fees** from your profile page — you'd need to then manually forward them to the vault, OR
@@ -113,7 +113,7 @@ vault.setFireballMode(false, 0);
 
 Tweet template when activating:
 > 🔥 FIREBALL MODE ACTIVATED 🔥  
-> The Unicorn BallVault is in overdrive — every fraction of ETH in fees is becoming a buyback RIGHT NOW.  
+> The UniBallVault is in overdrive — every fraction of ETH in fees is becoming a buyback RIGHT NOW.  
 > Smart contract: [address]  
 > Watch the stats: [token page]  
 > $TOKEN 🌨️→🔥
@@ -130,7 +130,7 @@ Tweet template when activating:
 
 ---
 
-## Frontend: Unicorn Ball Stats Widget (React)
+## Frontend: UniBall Stats Widget (React)
 
 Drop this into the livo.trade token page or your own landing page.
 
@@ -153,7 +153,7 @@ function formatK(n) {
   return n.toFixed(0);
 }
 
-export function Unicorn BallWidget() {
+export function UniBallWidget() {
   const [stats, setStats] = useState(null);
   const [fireball, setFireball] = useState(false);
 
@@ -189,7 +189,7 @@ export function Unicorn BallWidget() {
         </div>
       )}
       <div style={styles.header}>
-        {fireball ? '🔥' : '❄️'} Unicorn Ball Buyback Engine
+        {fireball ? '🔥' : '❄️'} UniBall Buyback Engine
       </div>
       <div style={styles.subtitle}>
         100% of creator fees → automated buybacks
@@ -305,7 +305,7 @@ const styles = {
 
 ## Security Audit Checklist
 
-| Risk | Mitigation in Unicorn BallVault |
+| Risk | Mitigation in UniBallVault |
 |---|---|
 | Re-entrancy attack | `ReentrancyGuard` on all external state-changers |
 | Sandwich / MEV buyback | Cooldown between executions; caller can pass `minOut` |
@@ -322,13 +322,13 @@ const styles = {
 
 ## Marketing Copy (for livo.trade token description)
 
-> **$TOKEN runs on Unicorn Ball Tech — the same mechanism that 10x'd $UNICORNBALL on Solana, now live on Ethereum.**
+> **$TOKEN runs on UniBall Tech — the same mechanism that 10x'd $UNICORNBALL on Solana, now live on Ethereum.**
 >
 > Every trade generates fees. Most tokens send those fees to the dev. **We don't.**
 >
-> 100% of creator fees flow into the Unicorn BallVault — a verified, immutable smart contract that uses every wei to buy $TOKEN from the market and either burns it forever or locks it as permanent liquidity.
+> 100% of creator fees flow into the UniBallVault — a verified, immutable smart contract that uses every wei to buy $TOKEN from the market and either burns it forever or locks it as permanent liquidity.
 >
-> The more it's traded, the more gets bought back. The more gets bought back, the less supply exists. That's the Unicorn Ball Effect.
+> The more it's traded, the more gets bought back. The more gets bought back, the less supply exists. That's the UniBall Effect.
 >
 > ✅ Verified contract — read every line  
 > ✅ Zero dev fee — 100% goes to buybacks  
